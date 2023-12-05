@@ -128,8 +128,26 @@ app.get('/', (req, res) => {
 })
 
 // transportation data
-app.get('/', (req, res) => {
+app.get('/transport', (req, res) => {
     const sql = "SELECT * FROM transportation";
+    db.query(sql, (err, result) => {
+        if (err) return res.json({ Message: "Error" })
+        return res.json(result)
+    })
+})
+
+// activities data
+app.get('/activities', (req, res) => {
+    const sql = "SELECT * FROM activities";
+    db.query(sql, (err, result) => {
+        if (err) return res.json({ Message: "Error" })
+        return res.json(result)
+    })
+})
+
+// hotels data
+app.get('/hotels', (req, res) => {
+    const sql = "SELECT * FROM hotels";
     db.query(sql, (err, result) => {
         if (err) return res.json({ Message: "Error" })
         return res.json(result)
