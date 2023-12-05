@@ -31,13 +31,6 @@ const db = mysql.createConnection({
     database: process.env.DATABASE
 });
 
-// db.connect((error) => {
-//     if (error) {
-//         console.log(error)
-//     } else {
-//         console.log("server connected")
-//     }
-// })
 
 
 
@@ -86,10 +79,10 @@ app.post('/', (req, res) => {
 
 
 const verifyUser = (req, res, next) => {
-    const token = req.cookies.token;
-    if (!token) {
-        return res.json({ Message: "We need token" });
-    } else {
+    // const token = req.cookies.token;
+    // if (!token) {
+    //     return res.json({ Message: "We need token" });
+    // } else {
         jwt.verify(token, 'i-am-a-sec-key', (err, decoded) => {
             if (err) {
                 return res.json({ Message: "Auth Error" });
@@ -98,39 +91,49 @@ const verifyUser = (req, res, next) => {
                 next();
             }
         })
-    }
+    // }
 }
 
 app.get('/', verifyUser, (req, res) => {
-    return res.json({ Status: "Success", name: req.name });
+    return res.json({ Status: "Success", name: req.name, email: req.email });
 })
 
 // login without hash
 app.post('/login', (req, res) => {
     const sql = "SELECT * FROM userlogin WHERE email = ? AND password = ?"
     db.query(sql, [req.body.email, req.body.password], (err, data) => {
-        if (err) return res.json({ Message: "Server site Error" });
+        if (err) return res.json("Log in failed");
         if (data.length > 0) {
-            const name = data[0].name;
-            const token = jwt.sign({ name }, "i-am-a-sec-key", { expiresIn: '1d' })
-            res.cookie('token', token);
-            return res.json({ Status: "Success" })
-        } else {
+            const {name} = data[0]
+            // const token = jwt.sign({ name }, "i-am-a-sec-key", { expiresIn: '1d' })
+            // res.cookie('token', token);
+            return res.json({ Status: "Success", name })
+        }
+        else {
             return res.json({ Message: "No data recorded" });
         }
     })
 })
 
-app.get('/logout', (req, res) => {
-    res.clearCookie('token');
-    return res.json({ Status: "Success" })
-})
+// app.get('/logout', (req, res) => {
+//     res.clearCookie('token');
+//     return res.json({ Status: "Success" })
+// })
 
 
 const port = process.env.PORT || 5000;
 
 app.get('/', (req, res) => {
     res.send("<h1>WE GOT CONNECTED</h1>")
+})
+
+// transportation data
+app.get('/', (req, res) => {
+    const sql = "SELECT * FROM transportation";
+    db.query(sql, (err, result) => {
+        if (err) return res.json({ Message: "Error" })
+        return res.json(result)
+    })
 })
 
 app.listen(port, () => {
