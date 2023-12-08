@@ -14,15 +14,16 @@ dotenv.config({ path: './.env' });
 
 const app = express();
 
+
+
 app.use(express.json());
-app.use(cors(
-    {
-        origin: ['http://localhost:5173'],
-        methods: ["POST", "GET"],
-        credentials: true
-    }
-));
+app.use(cors({
+    origin: ['http://localhost:5173'],
+    methods: ["POST", "GET", "PUT", "DELETE"],
+    credentials: true
+}));
 app.use(cookieParser());
+
 
 
 const db = mysql.createConnection({
@@ -208,7 +209,15 @@ app.get('/edit/:id', (req, res) => {
 
 
 // update user details
+app.put('/update/:id', (req, res) => {
+    const sql = "UPDATE userlogin SET `name` = ?, `email` = ? WHERE id = ?";
+    const id = req.params.id;
 
+    db.query(sql, [req.body.names, req.body.emails, id], (err, result) => {
+        if (err) return res.json("error")
+        return res.json({updated: true})
+    })
+})
 
 
 app.listen(port, () => {
