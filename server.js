@@ -13,6 +13,7 @@ const salt = 10;
 dotenv.config({ path: './.env' });
 
 const app = express();
+
 app.use(express.json());
 app.use(cors(
     {
@@ -51,7 +52,7 @@ app.post('/register', (req, res) => {
     ]
     db.query(sql, [userInfo], (err, result) => {
         if (err) {
-            return res.json({ Error: "Inserting data error" })
+            return res.json({ Error: "Inserting data error or duplicate email" })
         }
 
         return res.json({ Status: "Success" })
@@ -63,11 +64,12 @@ app.post('/register', (req, res) => {
 
 // review
 app.post('/', (req, res) => {
-    const sql = "INSERT INTO reviews (comment, rate, date) VALUES (?)"; 
+    const sql = "INSERT INTO reviews (comment, rate, date, user_email) VALUES (?)"; 
     const userReview = [
         req.body.comment,
         req.body.rate,
-        req.body.currentDate
+        req.body.currentDate,
+        req.body.userEmail
     ]
     db.query(sql, [userReview], (err, result) => {
         if (err) {
@@ -79,10 +81,10 @@ app.post('/', (req, res) => {
 
 
 const verifyUser = (req, res, next) => {
-    // const token = req.cookies.token;
-    // if (!token) {
-    //     return res.json({ Message: "We need token" });
-    // } else {
+    const token = req.cookies.token;
+    if (!token) {
+        return res.json({ Message: "We need token" });
+    } else {
         jwt.verify(token, 'i-am-a-sec-key', (err, decoded) => {
             if (err) {
                 return res.json({ Message: "Auth Error" });
@@ -91,7 +93,7 @@ const verifyUser = (req, res, next) => {
                 next();
             }
         })
-    // }
+    }
 }
 
 app.get('/', verifyUser, (req, res) => {
@@ -104,10 +106,10 @@ app.post('/login', (req, res) => {
     db.query(sql, [req.body.email, req.body.password], (err, data) => {
         if (err) return res.json("Log in failed");
         if (data.length > 0) {
-            const {name} = data[0]
+            const {name, email} = data[0]
             // const token = jwt.sign({ name }, "i-am-a-sec-key", { expiresIn: '1d' })
             // res.cookie('token', token);
-            return res.json({ Status: "Success", name })
+            return res.json({ Status: "Success", name, email })
         }
         else {
             return res.json({ Message: "No data recorded" });
@@ -127,7 +129,7 @@ app.get('/', (req, res) => {
     res.send("<h1>WE GOT CONNECTED</h1>")
 })
 
-// transportation data
+// transportation data for showing frontend part
 app.get('/transport', (req, res) => {
     const sql = "SELECT * FROM transportation";
     db.query(sql, (err, result) => {
@@ -136,7 +138,7 @@ app.get('/transport', (req, res) => {
     })
 })
 
-// activities data
+// activities data for showing frontend part
 app.get('/activities', (req, res) => {
     const sql = "SELECT * FROM activities";
     db.query(sql, (err, result) => {
@@ -145,7 +147,7 @@ app.get('/activities', (req, res) => {
     })
 })
 
-// hotels data
+// hotels data for showing frontend part
 app.get('/hotels', (req, res) => {
     const sql = "SELECT * FROM hotels";
     db.query(sql, (err, result) => {
@@ -153,6 +155,61 @@ app.get('/hotels', (req, res) => {
         return res.json(result)
     })
 })
+
+
+
+// bookings table
+app.post('/bookings', (req, res) => {
+    const sql = "INSERT INTO user_bookings (vehicle_type_title, book_type, price, user_email) VALUES (?)";
+    const userBookings = [
+        req.body.title,
+        req.body.book_type,
+        req.body.price,
+        req.body.userEmail,
+    ]
+    db.query(sql, [userBookings], (err, result) => {
+        if (err) {
+            return res.json({ Error: err.message })
+        }
+        return res.json({ Status: "Success", isDone: "Data received" })
+    })
+})
+
+
+// bookings cart
+app.get('/bookings', (req, res) => {
+    const sql = "SELECT * FROM user_bookings";
+    db.query(sql, (err, result) => {
+        if (err) return res.json({ Message: "Error" })
+        return res.json(result)
+    })
+})
+
+
+// user details profile
+app.get('/userlogin', (req, res) => {
+    const sql = "SELECT * FROM userlogin";
+    db.query(sql, (err, result) => {
+        if (err) return res.json({ Message: "Error" })
+        return res.json(result)
+    })
+})
+
+
+// 
+app.get('/edit/:id', (req, res) => {
+    const sql = "SELECT * FROM userlogin WHERE id = ?";
+    const id = req.params.id;
+    db.query(sql, [id],  (err, result) => {
+        if (err) return res.json({ Message: "Error" })
+        return res.json(result)
+    })
+})
+
+
+// update user details
+
+
 
 app.listen(port, () => {
     console.log('we are responding from server', port)
