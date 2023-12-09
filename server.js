@@ -157,11 +157,20 @@ app.get('/hotels', (req, res) => {
     })
 })
 
+// activities data for showing frontend part
+app.get('/Packages', (req, res) => {
+    const sql = "SELECT * FROM packages";
+    db.query(sql, (err, result) => {
+        if (err) return res.json({ Message: "Error" })
+        return res.json(result)
+    })
+})
+
 
 
 // bookings table
 app.post('/bookings', (req, res) => {
-    const sql = "INSERT INTO user_bookings (vehicle_type_title, book_type, price, user_email) VALUES (?)";
+    const sql = "INSERT INTO user_bookings (title, book_type, price, user_email) VALUES (?)";
     const userBookings = [
         req.body.title,
         req.body.book_type,
@@ -215,7 +224,21 @@ app.put('/update/:id', (req, res) => {
 
     db.query(sql, [req.body.names, req.body.emails, id], (err, result) => {
         if (err) return res.json("error")
-        return res.json({updated: true})
+        return res.json(result)
+    })
+})
+
+
+// delete user cart
+app.delete('/bookings/:booking_id', (req, res) => {
+    // const sql = "DELETE FROM user_bookings WHERE booking_id = ?";
+    const sql = "DELETE FROM user_bookings WHERE booking_id = ?";
+    const booking_id = req.params.booking_id;
+    console.log('I server:',booking_id);
+
+    db.query(sql, [booking_id], (err, result) => {
+        if (err) return res.json("error")
+        return res.json({message: "Data deleted"})
     })
 })
 
