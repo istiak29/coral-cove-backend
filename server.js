@@ -14,8 +14,6 @@ dotenv.config({ path: './.env' });
 
 const app = express();
 
-
-
 app.use(express.json());
 app.use(cors({
     origin: ['http://localhost:5173'],
@@ -55,13 +53,10 @@ app.post('/register', (req, res) => {
         if (err) {
             return res.json({ Error: "Inserting data error or duplicate email" })
         }
-
         return res.json({ Status: "Success" })
-
     })
 
 })
-
 
 // review
 app.post('/', (req, res) => {
@@ -216,7 +211,6 @@ app.get('/edit/:id', (req, res) => {
     })
 })
 
-
 // update user details
 app.put('/update/:id', (req, res) => {
     const sql = "UPDATE userlogin SET `name` = ?, `email` = ? WHERE id = ?";
@@ -227,7 +221,6 @@ app.put('/update/:id', (req, res) => {
         return res.json(result)
     })
 })
-
 
 // delete user cart
 app.delete('/bookings/:booking_id', (req, res) => {
@@ -241,7 +234,6 @@ app.delete('/bookings/:booking_id', (req, res) => {
         return res.json({message: "Data deleted"})
     })
 })
-
 
 app.listen(port, () => {
     console.log('we are responding from server', port)
